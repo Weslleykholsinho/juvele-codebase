@@ -87,7 +87,7 @@ nav ul li a{
 
 .search-icon i {
     color: #fff;
-    font-size: 20px;
+    font-size: 28px;
 }
 
 /* Search UI ajustado para respeitar a altura fixa */
@@ -95,13 +95,13 @@ nav ul li a{
     position: fixed;
     top: var(--nav-height); /* usa a variável */
     right: 18px;
-    width: 340px;
-    max-width: calc(100% - 36px);
+    width: 100%;
+    max-width: calc(100% - 32px);
     display: flex;
     gap: 8px;
     align-items: center;
-    padding: 8px;
-    border-radius: 10px;
+    padding: 10px;
+    border-radius: 6px;
     background: #fff;
     box-shadow: 0 8px 30px rgba(0,0,0,0.12);
     z-index: 9;
