@@ -28,8 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
             menuIcon.textContent = open ? '✕' : '≡';
         }
     }
-
-    // Toggle menu; ensure search is closed when menu opens
+    
     menuIcon.addEventListener('click', () => {
         const isOpen = menuList.classList.toggle('open');
         setIconOpen(isOpen);
@@ -99,22 +98,6 @@ document.addEventListener('DOMContentLoaded', () => {
     initSearch();
 
     // fechar menu / search ao rolar a página
-    window.addEventListener('scroll', () => {
-        // fechar menu se estiver aberto
-        if (menuList && menuList.classList.contains('open')) {
-            menuList.classList.remove('open');
-            setIconOpen(false);
-        }
-
-        // fechar search se estiver aberto
-        if (form && form.classList.contains('open')) {
-            form.classList.remove('open');
-            if (results) {
-                results.classList.remove('open');
-                results.setAttribute('aria-hidden', 'true');
-            }
-        }
-    }, { passive: true });
 
     /* ---------- search implementation (unchanged) ---------- */
     function getSearchable() {
