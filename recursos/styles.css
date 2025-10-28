@@ -323,14 +323,6 @@ nav ul li a{
     letter-spacing: 0.6px;
 }
 
-/* responsividade extra para telas pequenas */
-@media (max-width:420px) {
-    .promo-text {
-        padding: 14px 20px;
-        font-size: clamp(1.2rem, 5.5vw, 1.8rem);
-        border-radius: 10px;
-    }
-}
 
 .vantagens {
     max-width: 1100px;
