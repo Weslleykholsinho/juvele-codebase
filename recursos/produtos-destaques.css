@@ -1,0 +1,42 @@
+.produtos-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    padding: 16px;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+.produto-card {
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #fff;
+    display: inline-block; /* Permite que o card se ajuste ao conteúdo */
+    width: auto; /* Ajusta a largura do card ao tamanho do conteúdo */
+    max-width: 100%; /* Garante que o card não ultrapasse o container pai */
+}
+
+
+.produto-imagem img {
+    width: auto; /* Ajusta a largura para se adaptar ao tamanho da imagem */
+    max-width: 200px; /* Garante que a imagem não ultrapasse o container */
+    height: auto;
+    display: block;
+    margin: 0 auto; /* Centraliza a imagem dentro do container */
+}
+
+.produto-dados {
+    padding: 16px;
+}
+
+.produto-preco {
+    font-weight: bold;
+    color: #2a9d8f;
+}
+
+#destaques-title {
+    text-align: center;
+    margin-top: 5px;
+    font-size: 24px;
+    color: #264653;
+}
