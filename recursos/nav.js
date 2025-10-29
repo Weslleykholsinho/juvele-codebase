@@ -4,16 +4,36 @@ document.addEventListener('DOMContentLoaded', () => {
     const menuList = document.getElementById('menuList') || document.querySelector('nav ul');
 
     // Search elements
-    // pick the first visible search icon (nav one), but tolerate duplicates
     const searchIcon = document.querySelector('.search-icon');
     const form = document.getElementById('siteSearch');
     const input = document.getElementById('searchInput');
     const results = document.getElementById('searchResults');
     const submit = document.getElementById('searchSubmit');
 
+    // Products (loaded from produtos.json)
+    let products = [];
+    let productsLoaded = false;
+
+    async function loadProducts() {
+        try {
+            // ajuste o caminho se necessário
+            const resp = await fetch('recursos/produtos.json', { cache: 'no-store' });
+            if (!resp.ok) throw new Error('fetch error ' + resp.status);
+            const data = await resp.json();
+            // aceita array raiz ou { products: [...] }
+            products = Array.isArray(data) ? data : (data.products || []);
+        } catch (err) {
+            console.error('Erro ao carregar produtos.json:', err);
+            products = [];
+        } finally {
+            productsLoaded = true;
+        }
+    }
+
     // Safety checks
     if (!menuIcon || !menuList) {
         // still wire up search if menu missing
+        loadProducts();
         initSearch();
         return;
     }
@@ -57,6 +77,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function initSearch() {
         if (!form || !input || !results || !searchIcon) return;
 
+        // start loading products once
+        loadProducts();
+
         searchIcon.addEventListener('click', () => {
             const opened = form.classList.toggle('open');
 
@@ -78,8 +101,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        submit.addEventListener('click', () => performSearch(input.value));
-        input.addEventListener('input', debounce(() => performSearch(input.value), 220));
+        submit.addEventListener('click', () => performProductSearch(input.value));
+        input.addEventListener('input', debounce(() => performProductSearch(input.value), 220));
 
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
@@ -99,23 +122,45 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // fechar menu / search ao rolar a página
 
-    /* ---------- search implementation (unchanged) ---------- */
-    function getSearchable() {
-        return Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, p, a, li, .promo-text'))
-            .filter(el => el.textContent && el.textContent.trim().length);
+    /* ---------- product-only search implementation ---------- */
+    function normalizeName(p) {
+        return (p.name || p.nome || p.title || p.titulo || '').toString();
     }
 
-    function performSearch(query) {
+    function getProductLink(p) {
+        // tenta vários campos comuns; ajuste conforme seu JSON
+        if (p.url) return p.url;
+        if (p.link) return p.link;
+        if (p.href) return p.href;
+        if (p.slug) return `/produto/${p.slug}`;
+        return null;
+    }
+
+    function performProductSearch(query) {
         results.innerHTML = '';
+
         if (!query || !query.trim()) {
             results.classList.remove('open');
             return;
         }
+
         const q = query.trim().toLowerCase();
-        const candidates = getSearchable();
-        const matches = candidates
-            .map(el => ({ el, text: el.textContent.trim(), link: findClosestHref(el) }))
-            .filter(item => item.text.toLowerCase().includes(q))
+
+        if (!productsLoaded) {
+            results.innerHTML = '<div class="search-item">Carregando produtos...</div>';
+            results.classList.add('open');
+            return;
+        }
+
+        if (!products || products.length === 0) {
+            results.innerHTML = '<div class="search-item">Nenhum produto disponível</div>';
+            results.classList.add('open');
+            return;
+        }
+
+        const matches = products
+            .map(p => ({ p, name: normalizeName(p) }))
+            .filter(item => item.name && item.name.toLowerCase().includes(q))
             .slice(0, 30);
 
         if (matches.length === 0) {
@@ -128,13 +173,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const div = document.createElement('div');
             div.className = 'search-item';
             div.tabIndex = 0;
-            div.innerHTML = highlight(m.text, q);
+            div.innerHTML = highlight(m.name, q);
+            const link = getProductLink(m.p);
             div.addEventListener('click', () => {
-                if (m.link) {
-                    window.location.href = m.link;
+                if (link) {
+                    window.location.href = link;
                 } else {
-                    m.el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    form.classList.remove('open');
+                    // sem link: tenta rolar até um elemento na página que contenha o nome
+                    const el = Array.from(document.querySelectorAll('*')).find(elm => (elm.textContent || '').includes(m.name));
+                    if (el) {
+                        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        form.classList.remove('open');
+                        results.classList.remove('open');
+                    }
                 }
             });
             results.appendChild(div);
@@ -142,13 +193,10 @@ document.addEventListener('DOMContentLoaded', () => {
         results.classList.add('open');
     }
 
-    function findClosestHref(el) {
-        const a = el.closest('a');
-        return a && a.href ? a.href : null;
-    }
-
     function highlight(text, q) {
-        const idx = text.toLowerCase().indexOf(q);
+        if (!text) return '';
+        const lower = text.toLowerCase();
+        const idx = lower.indexOf(q);
         if (idx === -1) return escapeHtml(text.slice(0, 120));
         const before = escapeHtml(text.slice(Math.max(0, idx - 40), idx));
         const match = escapeHtml(text.substr(idx, q.length));
