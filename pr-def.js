@@ -1,0 +1,10 @@
+const valor1 = "Início";
+document.getElementById("opção1").innerText = valor1;
+const valor2 = "Sobre";
+document.getElementById("opção2").innerText = valor2;
+const valor3 = "Serviços";
+document.getElementById("opção3").innerText = valor3;
+const valor4 = "Produto";
+document.getElementById("opção4").innerText = valor4;
+const valor5 = "Contato";
+document.getElementById("opção5").innerText = valor5;
