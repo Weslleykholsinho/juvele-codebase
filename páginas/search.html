@@ -5,11 +5,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JUVELE - Moda Feminina</title>
-    <link rel="shortcut icon" href="/fav.ico"/>
+    <link rel="shortcut icon" href="/fav.ico" />
     <link rel="stylesheet" href="/recursos/search-page/search-page-home.css">
+     <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
+        rel="stylesheet">
+
 </head>
 
 <body>
+
+    <!--PARTE DE CIMA Titulo, logotipo e Navbar-->
+    <header>
+        <nav>
+            <div class="logo">
+                <h1>JUVELE</h1>
+            </div>
+            <ul id="menuList">
+                <li><a href="">Home</a></li>
+                <li><a href="">About</a></li>
+                <li><a href="">Services</a></li>
+                <li><a href="">Product</a></li>
+                <li><a href="">Contact</a></li>
+            </ul>
+            <div class="search-icon">
+                <i class="fa-solid fa-search"></i>
+            </div>
+            <div class="menu-icon">
+                <i class="fa-solid fa-bars" onclick="toggleMenu()"></i>
+            </div>
+        </nav>
+    </header>
+
+    <div class="search-icon" aria-hidden="true">
+        <!-- mantenha seu ícone atual aqui (ex.: <i class="fa fa-search"></i>) -->
+    </div>
+
+
+    <form id="siteSearch" class="search-bar" role="search" aria-label="Pesquisar no site" onsubmit="return false;">
+        <input id="searchInput" type="search" placeholder="Pesquisar..." aria-label="Pesquisar" />
+        <button id="searchSubmit" type="button" aria-label="Buscar">Buscar</button>
+        <div id="searchResults" class="search-results" role="listbox" aria-hidden="true"></div>
+    </form>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity=""
+        crossorigin="anonymous">
+    <script src="/recursos/search-page/search-page-home.js"></script>
 
 </body>
 
