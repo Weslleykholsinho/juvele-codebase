@@ -65,7 +65,7 @@ nav ul li a{
     cursor: pointer;
 }
 
-menu-icon{
+.menu-icon{
     display: none; /* oculto por padrão em desktop */
     width: 44px;
     height: 44px;
