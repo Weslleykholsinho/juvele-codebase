@@ -122,9 +122,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // fechar menu / search ao rolar a página
 
-    /* ---------- product-only search implementation ---------- */
+    /* ---------- product-only search implementation (substituir por este) ---------- */
+    function normalizeText(s) {
+        return (s || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    }
+
     function normalizeName(p) {
-        return (p.name || p.nome || p.title || p.titulo || '').toString();
+        // retorna o nome original e a versão normalizada (sem acentos, minúscula)
+        const raw = (p.name || p.nome || p.title || p.titulo || '').toString();
+        return { raw, norm: normalizeText(raw) };
     }
 
     function getProductLink(p) {
@@ -144,7 +150,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const q = query.trim().toLowerCase();
+        const qRaw = query.trim();
+        const q = normalizeText(qRaw);
 
         if (!productsLoaded) {
             results.innerHTML = '<div class="search-item">Carregando produtos...</div>';
@@ -158,29 +165,56 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const matches = products
-            .map(p => ({ p, name: normalizeName(p) }))
-            .filter(item => item.name && item.name.toLowerCase().includes(q))
-            .slice(0, 30);
+        // coletar matches ponderados por posição da palavra e se é prefixo
+        const foundMap = new Map(); // product -> bestMatchObj
 
-        if (matches.length === 0) {
+        products.forEach((p, idx) => {
+            const { raw, norm } = normalizeName(p);
+            if (!norm) return;
+
+            const words = norm.split(/\s+/).filter(Boolean);
+            // procurar em cada palavra na ordem (prioriza palavra 0, depois 1, ...)
+            for (let wi = 0; wi < words.length; wi++) {
+                const w = words[wi];
+                const pos = w.indexOf(q);
+                if (pos === -1) continue; // não encontrado nesta palavra
+
+                // score: menor é melhor. Prioriza palavras com menor índice e prefixos (pos === 0)
+                const score = wi * 100 + (pos === 0 ? 0 : 20 + pos);
+                const prev = foundMap.get(p);
+                if (!prev || score < prev.score) {
+                    foundMap.set(p, { p, rawName: raw, score, wordIndex: wi, pos });
+                }
+                // como usuário quer buscar palavra por palavra, se encontramos na palavra atual
+                // podemos parar de checar palavras subsequentes? Não: pode haver ocorrência em palavra anterior
+                // porém iterando em ordem, primeiras palavras tem melhor score; continuar para obter melhor pos (rare)
+            }
+        });
+
+        // se não há matches, informar sem resultados
+        if (foundMap.size === 0) {
             results.innerHTML = '<div class="search-item">Nenhum resultado</div>';
             results.classList.add('open');
             return;
         }
 
+        // transformar em array, ordenar por score e limitar a 10
+        const matches = Array.from(foundMap.values())
+            .sort((a, b) => a.score - b.score)
+            .slice(0, 10);
+
+        // construir itens de resultado
         matches.forEach(m => {
             const div = document.createElement('div');
             div.className = 'search-item';
             div.tabIndex = 0;
-            div.innerHTML = highlight(m.name, q);
+            div.innerHTML = highlight(m.rawName, qRaw);
             const link = getProductLink(m.p);
             div.addEventListener('click', () => {
                 if (link) {
                     window.location.href = link;
                 } else {
-                    // sem link: tenta rolar até um elemento na página que contenha o nome
-                    const el = Array.from(document.querySelectorAll('*')).find(elm => (elm.textContent || '').includes(m.name));
+                    const el = Array.from(document.querySelectorAll('*')).find(elm => (elm.textContent || '').includes(m.rawName));
                     if (el) {
                         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         form.classList.remove('open');
@@ -190,22 +224,48 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             results.appendChild(div);
         });
+
         results.classList.add('open');
     }
 
-    function highlight(text, q) {
+    function highlight(text, qRaw) {
         if (!text) return '';
-        const lower = text.toLowerCase();
-        const idx = lower.indexOf(q);
+        // destacar a primeira ocorrência do texto digitado (sem alterar acentos/maiúsculas)
+        const normText = normalizeText(text);
+        const normQ = normalizeText(qRaw);
+        const idx = normText.indexOf(normQ);
         if (idx === -1) return escapeHtml(text.slice(0, 120));
-        const before = escapeHtml(text.slice(Math.max(0, idx - 40), idx));
-        const match = escapeHtml(text.substr(idx, q.length));
-        const after = escapeHtml(text.substr(idx + q.length, 120));
+        // usar posições no texto original: calcular offset aproximado
+        // estratégia: localizar a substring equivalente no texto original por comparações
+        let start = 0, foundAt = -1;
+        // percorrer janelas no texto original para achar trecho cuja normalização casa com normQ
+        for (let i = 0; i <= text.length - qRaw.length; i++) {
+            const slice = text.substr(i, qRaw.length);
+            if (normalizeText(slice) === normQ) {
+                foundAt = i;
+                break;
+            }
+        }
+        if (foundAt === -1) {
+            // fallback: achar por posição estimada usando idx na versão normalizada
+            // mapear caracteres: percorre e conta equivalência
+            let ni = 0, oi = 0;
+            while (ni < idx && oi < text.length) {
+                if (normalizeText(text[oi])) {
+                    ni++;
+                }
+                oi++;
+            }
+            foundAt = oi;
+        }
+        const before = escapeHtml(text.slice(Math.max(0, foundAt - 40), foundAt));
+        const match = escapeHtml(text.substr(foundAt, qRaw.length));
+        const after = escapeHtml(text.substr(foundAt + qRaw.length, 120));
         return `${before}<mark>${match}</mark>${after}`;
     }
 
     function escapeHtml(s) {
-        return s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        return (s || '').toString().replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     }
 
     function debounce(fn, ms) {

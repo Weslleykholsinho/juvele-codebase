@@ -1,3 +1,4 @@
+/* Início da definição dos valores das opções do Menu*/
 const valor1 = "Início";
 document.getElementById("opção1").innerText = valor1;
 const valor2 = "Sobre";
@@ -8,3 +9,5 @@ const valor4 = "Produto";
 document.getElementById("opção4").innerText = valor4;
 const valor5 = "Contato";
 document.getElementById("opção5").innerText = valor5;
+
+/* Fim da definição dos valores das opções */
