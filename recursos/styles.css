@@ -93,7 +93,7 @@ nav ul li a{
 /* Search UI ajustado para respeitar a altura fixa */
 .search-bar {
     position: fixed;
-    top: var(--nav-height); /* usa a variável */
+    top: var(--nav-height);
     right: 18px;
     width: 100%;
     max-width: calc(100% - 32px);
