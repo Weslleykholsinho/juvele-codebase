@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
             menuIcon.textContent = open ? '✕' : '≡';
         }
     }
-    
+
     menuIcon.addEventListener('click', () => {
         const isOpen = menuList.classList.toggle('open');
         setIconOpen(isOpen);
@@ -101,7 +101,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        submit.addEventListener('click', () => performProductSearch(input.value));
+        submit.addEventListener('click', (e) => {
+            const q = (input.value || '').trim();
+            if (!q) return;
+            // redireciona para a página de resultados com o termo como query param
+            window.location.href = `/pages/search.html?q=${encodeURIComponent(q)}`;
+        });
         input.addEventListener('input', debounce(() => performProductSearch(input.value), 220));
 
         document.addEventListener('keydown', (e) => {
