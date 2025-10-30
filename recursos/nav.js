@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const q = (input.value || '').trim();
             if (!q) return;
             // redireciona para a página de resultados com o termo como query param
-            window.location.href = `./pages/search.html?q=${encodeURIComponent(q)}`;
+            window.location.href = `../pages/search.html?q=${encodeURIComponent(q)}`;
         });
         input.addEventListener('input', debounce(() => performProductSearch(input.value), 220));
 
