@@ -9,5 +9,3 @@ const valor4 = "Produto";
 document.getElementById("op4").innerText = valor4;
 const valor5 = "Contato";
 document.getElementById("op5").innerText = valor5;
-
-/* Fim da definição dos valores das opções */
