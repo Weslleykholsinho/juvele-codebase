@@ -1,13 +1,13 @@
 /* Início da definição dos valores das opções do Menu*/
 const valor1 = "Início";
-document.getElementById("opção1").innerText = valor1;
+document.getElementById("op1").innerText = valor1;
 const valor2 = "Sobre";
-document.getElementById("opção2").innerText = valor2;
+document.getElementById("op2").innerText = valor2;
 const valor3 = "Serviços";
-document.getElementById("opção3").innerText = valor3;
+document.getElementById("op3").innerText = valor3;
 const valor4 = "Produto";
-document.getElementById("opção4").innerText = valor4;
+document.getElementById("op4").innerText = valor4;
 const valor5 = "Contato";
-document.getElementById("opção5").innerText = valor5;
+document.getElementById("op5").innerText = valor5;
 
 /* Fim da definição dos valores das opções */
